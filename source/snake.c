@@ -26,7 +26,10 @@ int gameover = false,
     snakeX[short], snakeY[short],
     snake_length = 1,
     foodX = 0, foodY = 0,
+    food2X = 0, food2Y = 0,
     dirX = 0, dirY = 0;
+
+
 
 HANDLE hConsole = null;
 CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -38,6 +41,10 @@ void setup() {
     srand(time(0x00));  // Initialize the random number generator with the current time
     foodX = 1 + rand() % (WIDTH - 2);
     foodY = 1 + rand() % (HEIGHT - 2);
+
+    srand(time(0x00));  // Another item, just for fun
+    food2X = 2 + rand() % (WIDTH - 2);
+    food2Y = 2 + rand() % (HEIGHT - 2);
 
     dirX = 0;
     dirY = 1;  // Move down
@@ -68,6 +75,8 @@ void render() {
                 draw(!gameover ? "^^" : "oO", BACKGROUND_WHITE | FOREGROUND_BLACK);  // Draw the snake's head with eyes
             else if (i == foodY && j == foodX)                                       // Check if it's the food cell
                 draw("  ", BACKGROUND_LIGHT_RED);                                    // Draw an apple (food)
+            else if (i == food2Y && j == food2X)                                     
+                draw("  ", BACKGROUND_LIGHT_YELLOW);                                 
             else {
                 int isBody = false;
                 for (int k = 1; k < snake_length; k++)  // Loop through the snake's body cells
@@ -195,6 +204,41 @@ void logic() {
         snake_length++;  // Increase the length of the snake
     }
 
+    // Another Food item
+    if (snakeX[0] == food2X && snakeY[0] == food2Y) {
+        // Generate new random coordinates for food within the game field (excluding the borders)
+        do {
+            food2X = 1 + rand() % (WIDTH - 2);
+            food2Y = 1 + rand() % (HEIGHT - 2);
+        } while (food2X == snakeX[0] && food2Y == snakeY[0]);
+
+        // Check if the food spawns on the snake's body
+        int spawnOnBody = true;
+        for (int i = 1; i < snake_length; i++) {
+            if (food2X == snakeX[i] && food2Y == snakeY[i]) {
+                spawnOnBody = true;
+                break;
+            }
+        }
+
+        // If the food spawns on the snake's body, try generating new coordinates again
+        while (spawnOnBody) {
+            food2X = 1 + rand() % (WIDTH - 2);
+            food2Y = 1 + rand() % (HEIGHT - 2);
+
+            spawnOnBody = false;
+            for (int i = 0; i < snake_length; i++) {
+                // If the coordinates of the Apple are on the body of the snake, then the cycle continues
+                if (food2X == snakeX[i] && food2Y == snakeY[i]) {
+                    spawnOnBody = true;
+                    break;
+                }
+            }
+        }
+
+        score += 5;     // Increase the score
+    }
+
     // Check for collision with itself
     for (int i = 1; i < snake_length; i++) {
         if (snakeX[i] == snakeX[0] && snakeY[i] == snakeY[0]) {
@@ -231,9 +275,13 @@ int main() {
     SetConsoleTitleA(title);
 
     int buffer[] = {WIDTH * 2 + 1, HEIGHT + 8};
-
+    
+    // turns off the blinking cursor
+    CONSOLE_CURSOR_INFO cursorinfo = { 0, }; 
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleScreenBufferSize(hConsole, (COORD){buffer[0], buffer[1]});
+    cursorinfo.dwSize = 1; cursorinfo.bVisible = FALSE;
+    SetConsoleCursorInfo(hConsole, &cursorinfo);
 
     SMALL_RECT windowSize = {0, 0, buffer[0] - 1, buffer[1] - 1};
     SetConsoleWindowInfo(hConsole, true, &windowSize);
@@ -261,10 +309,31 @@ int main() {
     draw(" GAME OVER! ", BACKGROUND_WHITE | FOREGROUND_RED);
     draw("=\n==============", BACKGROUND_RED | FOREGROUND_RED);
 
+    // experimental Ranking system.
+    FILE* rankfile;                         // Opens File for Ranking
+    rankfile = fopen("C:\RANKING.txt", "a");
+    if (rankfile == NULL)                   // If not detected, close the game.
+        return 0;
+
+    printf("\n Enter your name : ");
+    char name;
+    scanf("%c", &name);
+
+    fprintf(rankfile, "%c %d\n", name, score);  // if in any way the game breaks, file will get corrupted bc of this
+    fclose(rankfile);
+    rankfile = fopen("C:\RANKING.txt", "r");
+    int ranking;
+    char pname;
+    while (fscanf(rankfile, "%c %d\n", &pname, &ranking)==2) {
+        printf("%c %d\n", pname, ranking);
+    }
+
+
     printf("\nPress X to exit");
 
     while (true) {
         if (tolower(_getch()) == 'x') {
+            fclose(rankfile);
             return 0;
         }
     }
