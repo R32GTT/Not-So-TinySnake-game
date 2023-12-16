@@ -1,5 +1,5 @@
 # TinySnake-game
-Little game "Snake" for Windows in C (.EXE size is 3.5 kilobytes)
+Little game "Snake" for Windows in C (.EXE size is 12.5 kilobytes)
 
 ### [Download compiled as .EXE](https://github.com/DosX-dev/TinySnake-game/releases/tag/Builds)
 
