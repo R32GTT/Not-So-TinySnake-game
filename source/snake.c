@@ -41,9 +41,8 @@ void setup() {
     srand(time(0x00));  // Initialize the random number generator with the current time
     foodX = 1 + rand() % (WIDTH - 2);
     foodY = 1 + rand() % (HEIGHT - 2);
-
-    srand(time(0x00));  // Another item, just for fun
-    food2X = 2 + rand() % (WIDTH - 2);
+    // Another item, just for fun
+    food2X = 2 + rand() % (WIDTH - 2);      
     food2Y = 2 + rand() % (HEIGHT - 2);
 
     dirX = 0;
@@ -276,11 +275,11 @@ int main() {
 
     int buffer[] = {WIDTH * 2 + 1, HEIGHT + 8};
     
-    // turns off the blinking cursor
-    CONSOLE_CURSOR_INFO cursorinfo = { 0, }; 
+    
+    CONSOLE_CURSOR_INFO cursorinfo = { 0, };        
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleScreenBufferSize(hConsole, (COORD){buffer[0], buffer[1]});
-    cursorinfo.dwSize = 1; cursorinfo.bVisible = FALSE;
+    cursorinfo.dwSize = 1; cursorinfo.bVisible = FALSE;     // turns off the blinking cursor
     SetConsoleCursorInfo(hConsole, &cursorinfo);
 
     SMALL_RECT windowSize = {0, 0, buffer[0] - 1, buffer[1] - 1};
@@ -310,18 +309,18 @@ int main() {
     draw("=\n==============", BACKGROUND_RED | FOREGROUND_RED);
 
     // experimental Ranking system.
-    FILE* rankfile;                         // Opens File for Ranking
-    rankfile = fopen("C:\RANKING.txt", "a");
+    FILE* rankfile;                         
+    rankfile = fopen("RANKING.RN", "a");    // Opens File for Ranking
     if (rankfile == NULL)                   // If not detected, close the game.
         return 0;
 
     printf("\n Enter your name : ");
     char name;
     scanf("%c", &name);
-
     fprintf(rankfile, "%c %d\n", name, score);  // if in any way the game breaks, file will get corrupted bc of this
     fclose(rankfile);
-    rankfile = fopen("C:\RANKING.txt", "r");
+
+    rankfile = fopen("RANKING.RN", "r");
     int ranking;
     char pname;
     while (fscanf(rankfile, "%c %d\n", &pname, &ranking)==2) {
